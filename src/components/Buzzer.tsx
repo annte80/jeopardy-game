@@ -30,8 +30,6 @@ interface BuzzerProps {
 
 const BUZZER_SIZE = 'w-28 h-28 sm:w-36 sm:h-36';
 
-const RESULT_NOTIFICATION_MS = 5000;
-
 export function Buzzer({
   gameId,
   playerId,
@@ -60,22 +58,11 @@ export function Buzzer({
 
   const notifiedWinnerRef = useRef<string | null>(null);
 
-  const notificationTimerRef =
-    useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // ------------------------------------------------------------
-  // Buzzer enabled sound
-  // ------------------------------------------------------------
-
   useEffect(() => {
     if (soundEnabled && buzzerStatus === 'enabled') {
       playBuzzEnabled();
     }
   }, [buzzerStatus, soundEnabled]);
-
-  // ------------------------------------------------------------
-  // Reset when buzzer is disabled
-  // ------------------------------------------------------------
 
   useEffect(() => {
     if (buzzerStatus === 'disabled') {
@@ -85,17 +72,8 @@ export function Buzzer({
 
       playedWinSoundRef.current = false;
       notifiedWinnerRef.current = null;
-
-      if (notificationTimerRef.current) {
-        clearTimeout(notificationTimerRef.current);
-        notificationTimerRef.current = null;
-      }
     }
   }, [buzzerStatus]);
-
-  // ------------------------------------------------------------
-  // Effective winner
-  // ------------------------------------------------------------
 
   const effectiveWinnerId =
     localResult?.winnerPlayerId ?? winnerPlayerId;
@@ -103,25 +81,14 @@ export function Buzzer({
   const effectiveLocked =
     buzzerStatus === 'locked' || localResult !== null;
 
-  const winner = players.find(
-    (p) => p.id === effectiveWinnerId
-  );
+  const winner = players.find((p) => p.id === effectiveWinnerId);
 
-  const isWinner =
-    effectiveWinnerId === playerId;
+  const isWinner = effectiveWinnerId === playerId;
 
   const lostAfterBuzzing =
-    buzzSent &&
-    localResult !== null &&
-    !localResult.won;
+    buzzSent && localResult !== null && !localResult.won;
 
-  const enabled =
-    buzzerStatus === 'enabled' &&
-    !effectiveLocked;
-
-  // ------------------------------------------------------------
-  // Win sound
-  // ------------------------------------------------------------
+  const enabled = buzzerStatus === 'enabled' && !effectiveLocked;
 
   useEffect(() => {
     if (
@@ -133,107 +100,44 @@ export function Buzzer({
       playBuzzWin();
       playedWinSoundRef.current = true;
     }
-  }, [
-    soundEnabled,
-    effectiveLocked,
-    isWinner,
-  ]);
-
-  // ------------------------------------------------------------
-  // Fullscreen notification
-  // ------------------------------------------------------------
+  }, [soundEnabled, effectiveLocked, isWinner]);
 
   const triggerResultNotification = useCallback(() => {
     if (!effectiveWinnerId) return;
 
-    if (
-      notifiedWinnerRef.current === effectiveWinnerId
-    ) {
+    if (notifiedWinnerRef.current === effectiveWinnerId) {
       return;
     }
 
-    notifiedWinnerRef.current =
-      effectiveWinnerId;
+    notifiedWinnerRef.current = effectiveWinnerId;
 
     setShowResultNotification(true);
-
-    if (notificationTimerRef.current) {
-      clearTimeout(
-        notificationTimerRef.current
-      );
-    }
-
-    notificationTimerRef.current =
-      setTimeout(() => {
-        setShowResultNotification(false);
-        notificationTimerRef.current = null;
-      }, RESULT_NOTIFICATION_MS);
   }, [effectiveWinnerId]);
 
-  // ------------------------------------------------------------
-  // Realtime result
-  // ------------------------------------------------------------
-
-  useEffect(() => {
-    if (
-      buzzerStatus === 'locked' &&
-      winnerPlayerId
-    ) {
-      triggerResultNotification();
-    }
-  }, [
-    buzzerStatus,
-    winnerPlayerId,
-    triggerResultNotification,
-  ]);
-
-  // ------------------------------------------------------------
-  // Immediate RPC result
-  // ------------------------------------------------------------
-
-  useEffect(() => {
-    if (
-      localResult?.winnerPlayerId
-    ) {
-      triggerResultNotification();
-    }
-  }, [
-    localResult,
-    triggerResultNotification,
-  ]);
-
-  // ------------------------------------------------------------
-  // Cleanup
-  // ------------------------------------------------------------
-
-  useEffect(() => {
-    return () => {
-      if (notificationTimerRef.current) {
-        clearTimeout(
-          notificationTimerRef.current
-        );
-      }
-    };
+  const dismissResultNotification = useCallback(() => {
+    setShowResultNotification(false);
   }, []);
 
-  // ------------------------------------------------------------
-  // Buzz
-  // ------------------------------------------------------------
+  useEffect(() => {
+    if (buzzerStatus === 'locked' && winnerPlayerId) {
+      triggerResultNotification();
+    }
+  }, [buzzerStatus, winnerPlayerId, triggerResultNotification]);
+
+  useEffect(() => {
+    if (localResult?.winnerPlayerId) {
+      triggerResultNotification();
+    }
+  }, [localResult, triggerResultNotification]);
 
   const handleBuzz = useCallback(async () => {
-    if (
-      !enabled ||
-      buzzing ||
-      buzzSent
-    ) {
+    if (!enabled || buzzing || buzzSent) {
       return;
     }
 
     const now = Date.now();
 
-    if (
-      now - lastBuzzRef.current < 500
-    ) {
+    if (now - lastBuzzRef.current < 500) {
       return;
     }
 
@@ -247,59 +151,28 @@ export function Buzzer({
     }
 
     try {
-      const result = await claimBuzz(
-        gameId,
-        playerId,
-        playerToken
-      );
+      const result = await claimBuzz(gameId, playerId, playerToken);
 
       setLocalResult(result);
     } catch (error) {
-      console.error(
-        'Buzzer claim failed:',
-        error
-      );
+      console.error('Buzzer claim failed:', error);
 
       setBuzzSent(false);
     } finally {
       setBuzzing(false);
     }
-  }, [
-    enabled,
-    buzzing,
-    buzzSent,
-    soundEnabled,
-    gameId,
-    playerId,
-    playerToken,
-  ]);
-
-  // ------------------------------------------------------------
-  // SPACEBAR
-  //
-  // IMPORTANT:
-  // The listener uses CAPTURE PHASE.
-  //
-  // This lets us intercept Space before the PDF viewer receives
-  // the keyboard event. Space therefore activates the buzzer
-  // instead of exiting/changing PDF fullscreen.
-  // ------------------------------------------------------------
+  }, [enabled, buzzing, buzzSent, soundEnabled, gameId, playerId, playerToken]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (
-        e.code !== 'Space' &&
-        e.key !== ' '
-      ) {
+      if (e.code !== 'Space' && e.key !== ' ') {
         return;
       }
 
-      const target =
-        e.target as HTMLElement | null;
+      const target = e.target as HTMLElement | null;
 
       const tag = target?.tagName;
 
-      // Don't interfere with real form controls.
       if (
         tag === 'INPUT' ||
         tag === 'TEXTAREA' ||
@@ -314,12 +187,9 @@ export function Buzzer({
         return;
       }
 
-      // CRITICAL:
-      // Stop Space from reaching the PDF viewer.
       e.preventDefault();
       e.stopPropagation();
 
-      // Ignore key-repeat when Space is held.
       if (e.repeat) {
         return;
       }
@@ -327,34 +197,17 @@ export function Buzzer({
       handleBuzz();
     };
 
-    // true = CAPTURE PHASE
-    window.addEventListener(
-      'keydown',
-      handler,
-      true
-    );
+    window.addEventListener('keydown', handler, true);
 
     return () => {
-      window.removeEventListener(
-        'keydown',
-        handler,
-        true
-      );
+      window.removeEventListener('keydown', handler, true);
     };
   }, [handleBuzz]);
 
-  // ------------------------------------------------------------
-  // FULLSCREEN RESULT NOTIFICATION
-  //
-  // Render the notification inside the element that lives inside
-  // the presentation fullscreen container.
-  // ------------------------------------------------------------
-
   const resultNotification =
-    showResultNotification &&
-    effectiveWinnerId &&
-    winner ? (
+    showResultNotification && effectiveWinnerId && winner ? (
       <div
+        onClick={dismissResultNotification}
         className="
           absolute
           inset-0
@@ -362,14 +215,13 @@ export function Buzzer({
           flex
           items-center
           justify-center
-          pointer-events-none
+          pointer-events-auto
+          cursor-pointer
           px-4
         "
       >
-        {/* Backdrop */}
         <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
 
-        {/* Result card */}
         <div
           className={`
             relative
@@ -401,124 +253,51 @@ export function Buzzer({
         >
           {isWinner ? (
             <>
-              <Trophy
-                className="
-                  w-16
-                  h-16
-                  sm:w-24
-                  sm:h-24
-                  text-amber-300
-                  mx-auto
-                  mb-5
-                  animate-bounce
-                "
-              />
+              <Trophy className="w-16 h-16 sm:w-24 sm:h-24 text-amber-300 mx-auto mb-5 animate-bounce" />
 
-              <p
-                className="
-                  text-emerald-300
-                  font-black
-                  text-4xl
-                  sm:text-7xl
-                  tracking-tight
-                  text-glow-gold
-                "
-              >
+              <p className="text-emerald-300 font-black text-4xl sm:text-7xl tracking-tight text-glow-gold">
                 YOU BUZZED FIRST!
               </p>
 
-              <p
-                className="
-                  mt-4
-                  text-white
-                  text-xl
-                  sm:text-3xl
-                  font-bold
-                "
-              >
+              <p className="mt-4 text-white text-xl sm:text-3xl font-bold">
                 You were the fastest!
               </p>
             </>
           ) : (
             <>
-              <XCircle
-                className="
-                  w-16
-                  h-16
-                  sm:w-24
-                  sm:h-24
-                  text-red-400
-                  mx-auto
-                  mb-5
-                "
-              />
+              <XCircle className="w-16 h-16 sm:w-24 sm:h-24 text-red-400 mx-auto mb-5" />
 
-              <p
-                className="
-                  text-red-300
-                  font-black
-                  text-4xl
-                  sm:text-7xl
-                  tracking-tight
-                "
-              >
+              <p className="text-red-300 font-black text-4xl sm:text-7xl tracking-tight">
                 TOO SLOW!
               </p>
 
-              <p
-                className="
-                  mt-5
-                  text-white
-                  text-xl
-                  sm:text-3xl
-                  font-bold
-                "
-              >
-                <span className="text-amber-300">
-                  {winner.player_name}
-                </span>{' '}
+              <p className="mt-5 text-white text-xl sm:text-3xl font-bold">
+                <span className="text-amber-300">{winner.player_name}</span>{' '}
                 buzzed first!
               </p>
 
-              <p
-                className="
-                  mt-3
-                  text-slate-400
-                  text-base
-                  sm:text-xl
-                "
-              >
+              <p className="mt-3 text-slate-400 text-base sm:text-xl">
                 Player {winner.player_number}
               </p>
             </>
           )}
+
+          <p className="mt-6 text-slate-500 text-sm">
+            Tap anywhere to dismiss
+          </p>
         </div>
       </div>
     ) : null;
 
-  // ------------------------------------------------------------
-  // PORTAL NOTIFICATION INTO PDF FULLSCREEN ELEMENT
-  // ------------------------------------------------------------
-
   const fullscreenNotificationHost =
     typeof document !== 'undefined'
-      ? document.getElementById(
-          'buzzer-fullscreen-notification'
-        )
+      ? document.getElementById('buzzer-fullscreen-notification')
       : null;
 
   const fullscreenNotification =
-    fullscreenNotificationHost &&
-    resultNotification
-      ? createPortal(
-          resultNotification,
-          fullscreenNotificationHost
-        )
+    fullscreenNotificationHost && resultNotification
+      ? createPortal(resultNotification, fullscreenNotificationHost)
       : null;
-
-  // ------------------------------------------------------------
-  // DISABLED
-  // ------------------------------------------------------------
 
   if (buzzerStatus === 'disabled') {
     return (
@@ -556,10 +335,6 @@ export function Buzzer({
     );
   }
 
-  // ------------------------------------------------------------
-  // LOCKED
-  // ------------------------------------------------------------
-
   if (effectiveLocked) {
     if (isWinner) {
       return (
@@ -590,9 +365,7 @@ export function Buzzer({
               </div>
             </div>
 
-            <p className="text-emerald-400/70 text-xs">
-              Wait for the host
-            </p>
+            <p className="text-emerald-400/70 text-xs">Wait for the host</p>
           </div>
         </>
       );
@@ -673,10 +446,6 @@ export function Buzzer({
     );
   }
 
-  // ------------------------------------------------------------
-  // ENABLED
-  // ------------------------------------------------------------
-
   return (
     <>
       {fullscreenNotification}
@@ -755,10 +524,6 @@ export function Buzzer({
   );
 }
 
-// ============================================================
-// BUZZER STATUS — MODERATOR
-// ============================================================
-
 interface BuzzerStatusProps {
   buzzerStatus: BuzzerStatus;
   winnerPlayerId: string | null;
@@ -770,18 +535,14 @@ export function BuzzerStatus({
   winnerPlayerId,
   players,
 }: BuzzerStatusProps) {
-  const winner = players.find(
-    (p) => p.id === winnerPlayerId
-  );
+  const winner = players.find((p) => p.id === winnerPlayerId);
 
   if (buzzerStatus === 'disabled') {
     return (
       <div className="flex items-center gap-3 px-4 py-3 bg-slate-800/60 border border-slate-700 rounded-xl">
         <Lock className="w-5 h-5 text-slate-500" />
 
-        <span className="text-slate-400 font-semibold">
-          Buzzer Disabled
-        </span>
+        <span className="text-slate-400 font-semibold">Buzzer Disabled</span>
       </div>
     );
   }
