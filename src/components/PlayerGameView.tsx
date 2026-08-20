@@ -46,14 +46,6 @@ export function PlayerGameView({
 
   useHeartbeat(session.playerId, session.playerToken);
 
-  const buzzerActive =
-    game?.buzzer_status === 'enabled' ||
-    game?.buzzer_status === 'locked';
-
-  // ------------------------------------------------------------
-  // FULLSCREEN TRACKING
-  // ------------------------------------------------------------
-
   useEffect(() => {
     const handler = () => {
       setIsFullscreen(
@@ -68,20 +60,12 @@ export function PlayerGameView({
     };
   }, []);
 
-  // ------------------------------------------------------------
-  // MUTE
-  // ------------------------------------------------------------
-
   const toggleMute = () => {
     const next = !muted;
 
     setMuted(next);
     setMutedState(next);
   };
-
-  // ------------------------------------------------------------
-  // FULLSCREEN
-  // ------------------------------------------------------------
 
   const toggleFullscreen = useCallback(() => {
     const element = presentationRef.current;
@@ -97,20 +81,8 @@ export function PlayerGameView({
     }
   }, []);
 
-  // ------------------------------------------------------------
-  // KEYBOARD SHORTCUTS
-  //
-  // F = fullscreen
-  // Space = buzzer (handled by Buzzer.tsx)
-  //
-  // IMPORTANT:
-  // We deliberately DO NOT intercept Space here.
-  // The Buzzer component must receive Space normally.
-  // ------------------------------------------------------------
-
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // F / f controls fullscreen.
       if (
         event.code !== 'KeyF' &&
         event.key.toLowerCase() !== 'f'
@@ -118,7 +90,6 @@ export function PlayerGameView({
         return;
       }
 
-      // Do not steal F from text inputs or editable elements.
       const target = event.target as HTMLElement | null;
       const tag = target?.tagName;
 
@@ -134,42 +105,23 @@ export function PlayerGameView({
         return;
       }
 
-      // Don't allow browser/PDF controls to interpret F.
       event.preventDefault();
       event.stopPropagation();
 
       toggleFullscreen();
     };
 
-    window.addEventListener(
-      'keydown',
-      handleKeyDown,
-      true
-    );
+    window.addEventListener('keydown', handleKeyDown, true);
 
     return () => {
-      window.removeEventListener(
-        'keydown',
-        handleKeyDown,
-        true
-      );
+      window.removeEventListener('keydown', handleKeyDown, true);
     };
   }, [toggleFullscreen]);
 
-  // ------------------------------------------------------------
-  // CURRENT PLAYER
-  // ------------------------------------------------------------
-
-  const me = players.find(
-    (p) => p.id === session.playerId
-  );
+  const me = players.find((p) => p.id === session.playerId);
 
   return (
     <div className="min-h-screen bg-gradient-game flex flex-col">
-
-      {/* ======================================================
-          TOP BAR
-          ====================================================== */}
 
       <header className="flex items-center justify-between px-3 py-2 md:px-4 md:py-3 border-b border-slate-800 bg-slate-950/50 backdrop-blur-sm flex-shrink-0">
 
@@ -183,10 +135,7 @@ export function PlayerGameView({
 
         <div className="flex items-center gap-2">
 
-          <ConnectionIndicator
-            status={connectionStatus}
-            compact
-          />
+          <ConnectionIndicator status={connectionStatus} compact />
 
           <button
             onClick={toggleMute}
@@ -211,10 +160,6 @@ export function PlayerGameView({
         </div>
       </header>
 
-      {/* ======================================================
-          PLAYER INFO
-          ====================================================== */}
-
       <div className="flex items-center justify-between px-3 py-2 md:px-4 bg-slate-900/40 border-b border-slate-800 flex-shrink-0">
 
         <div className="flex items-center gap-2">
@@ -235,24 +180,14 @@ export function PlayerGameView({
 
       </div>
 
-      {/* ======================================================
-          MAIN
-          ====================================================== */}
+      <main className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
 
-      <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
-
-        {/* ====================================================
-            PRESENTATION / PDF
-            ==================================================== */}
+        {/* LEFT: PRESENTATION / PDF */}
 
         <div
           ref={presentationRef}
-          className="relative flex flex-1 min-h-0 bg-black"
+          className="relative flex-1 min-h-0 bg-black"
         >
-
-          {/* ==================================================
-              PDF
-              ================================================== */}
 
           {game.presentation_path ? (
             <PresentationViewer
@@ -269,27 +204,10 @@ export function PlayerGameView({
             </div>
           )}
 
-          {/* ==================================================
-              FULLSCREEN NOTIFICATION HOST
-
-              IMPORTANT:
-              This is INSIDE presentationRef.
-
-              Therefore, when presentationRef enters browser
-              fullscreen, this notification host remains inside
-              the fullscreen document.
-              ================================================== */}
-
           <div
             id="buzzer-fullscreen-notification"
             className="absolute inset-0 pointer-events-none z-[99999]"
           />
-
-          {/* ==================================================
-              FULLSCREEN BUTTON
-
-              F also controls fullscreen.
-              ================================================== */}
 
           {!isFullscreen && (
             <button
@@ -315,53 +233,51 @@ export function PlayerGameView({
 
         </div>
 
-        {/* ====================================================
-            BUZZER
+        {/* RIGHT SIDEBAR: SCORE / CHAT / BUZZER
+            On phones the buzzer is ordered first (right under the
+            presentation) since fast reaction time matters most there.
+            On wider screens it sits at the bottom of the sidebar. */}
 
-            SPACE IS HANDLED BY Buzzer.tsx.
-            We intentionally do NOT intercept Space above.
-            ==================================================== */}
+        <div className="w-full md:w-80 lg:w-96 flex-shrink-0 flex flex-col min-h-0 overflow-y-auto border-t md:border-t-0 md:border-l border-slate-800 bg-slate-950/30">
 
-        <div className="flex-shrink-0 border-t border-slate-800 bg-slate-950/30 px-3">
+          <div className="order-1 md:order-3 flex-shrink-0 border-b md:border-b-0 md:border-t border-slate-800 px-3">
+            <Buzzer
+              gameId={session.gameId}
+              playerId={session.playerId}
+              playerToken={session.playerToken}
+              playerName={session.playerName}
+              playerNumber={session.playerNumber}
+              buzzerStatus={game.buzzer_status}
+              winnerPlayerId={game.buzzer_winner_player_id}
+              players={players}
+              soundEnabled={!muted}
+              compact
+            />
+          </div>
 
-          <Buzzer
-            gameId={session.gameId}
-            playerId={session.playerId}
-            playerToken={session.playerToken}
-            playerName={session.playerName}
-            playerNumber={session.playerNumber}
-            buzzerStatus={game.buzzer_status}
-            winnerPlayerId={game.buzzer_winner_player_id}
-            players={players}
-            soundEnabled={!muted}
-          />
-
-        </div>
-
-        {/* ====================================================
-            SCOREBOARD
-            ==================================================== */}
-
-        {!buzzerActive && (
-          <div className="flex-shrink-0 p-3">
-
+          <div className="order-2 md:order-1 flex-shrink-0 p-3">
             <Scoreboard
               players={players}
-              highlightPlayerId={
-                game.buzzer_winner_player_id
-              }
+              highlightPlayerId={game.buzzer_winner_player_id}
               compact
               title="Scores"
             />
-
           </div>
-        )}
+
+          <div className="order-3 md:order-2 flex-shrink-0 md:flex-1 min-h-0 border-t border-slate-800/60 px-3 py-3 flex flex-col">
+            <h3 className="text-slate-500 text-xs font-bold tracking-wider uppercase mb-2 flex-shrink-0">
+              Chat
+            </h3>
+            <div className="h-32 md:h-auto md:flex-1 min-h-0 flex items-center justify-center rounded-xl bg-slate-900/40 border border-slate-800">
+              <p className="text-slate-600 text-sm text-center px-4">
+                Chat is coming soon
+              </p>
+            </div>
+          </div>
+
+        </div>
 
       </main>
-
-      {/* ======================================================
-          LEAVE DIALOG
-          ====================================================== */}
 
       <ConfirmationDialog
         open={confirmLeave}
