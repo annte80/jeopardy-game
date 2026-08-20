@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { supabase } from './supabase';
-import type { Game, Player } from './types';
-import { fetchGame, fetchPlayers, heartbeat } from './gameApi';
+import type { Game, Player, ChatMessage } from './types';
+import { fetchGame, fetchPlayers, fetchMessages, heartbeat } from './gameApi';
 
 // Fast safety-net polling.
 // Realtime should update instantly, but this guarantees the buzzer state
 // reaches every screen even if Supabase Realtime misses an event.
 const GAME_POLL_INTERVAL_MS = 750;
 const PLAYER_POLL_INTERVAL_MS = 2000;
+const CHAT_POLL_INTERVAL_MS = 3000;
 const RESUBSCRIBE_DELAY_MS = 1000;
 
 // ---------- Game subscription ----------
@@ -326,6 +327,122 @@ export function usePlayers(gameId: string | null): {
     players,
     loading,
     refetch,
+  };
+}
+
+// ---------- Chat messages ----------
+
+export function useMessages(gameId: string | null): {
+  messages: ChatMessage[];
+  loading: boolean;
+} {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!gameId) {
+      setMessages([]);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let resubscribeTimer: ReturnType<typeof setTimeout> | null = null;
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
+
+    const loadMessages = async () => {
+      try {
+        const fresh = await fetchMessages(gameId);
+
+        if (!cancelled) {
+          setMessages(fresh);
+        }
+      } catch (e) {
+        console.error('useMessages: fetch error', e);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    const subscribe = () => {
+      if (cancelled) return;
+
+      if (channel) {
+        supabase.removeChannel(channel);
+        channel = null;
+      }
+
+      channel = supabase
+        .channel(`messages-state-${gameId}-${Date.now()}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `game_id=eq.${gameId}`,
+          },
+          () => {
+            if (!cancelled) {
+              loadMessages();
+            }
+          }
+        )
+        .subscribe((status) => {
+          if (cancelled) return;
+
+          if (
+            status === 'CHANNEL_ERROR' ||
+            status === 'TIMED_OUT' ||
+            status === 'CLOSED'
+          ) {
+            if (resubscribeTimer) {
+              clearTimeout(resubscribeTimer);
+            }
+
+            resubscribeTimer = setTimeout(() => {
+              if (!cancelled) {
+                subscribe();
+              }
+            }, RESUBSCRIBE_DELAY_MS);
+          }
+        });
+    };
+
+    setLoading(true);
+
+    loadMessages();
+    subscribe();
+
+    pollTimer = setInterval(() => {
+      if (!cancelled) {
+        loadMessages();
+      }
+    }, CHAT_POLL_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+
+      if (pollTimer) {
+        clearInterval(pollTimer);
+      }
+
+      if (resubscribeTimer) {
+        clearTimeout(resubscribeTimer);
+      }
+
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [gameId]);
+
+  return {
+    messages,
+    loading,
   };
 }
 
