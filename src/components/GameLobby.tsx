@@ -20,7 +20,6 @@ export function ModeratorLobby({ session, onStart, onLeave }: ModeratorLobbyProp
   const { players, refetch } = usePlayers(session.gameId);
   const connectionStatus = useConnectionStatus();
   const [starting, setStarting] = useState(false);
-  const [confirmStart, setConfirmStart] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
   const { show } = useToast();
 
@@ -38,7 +37,6 @@ export function ModeratorLobby({ session, onStart, onLeave }: ModeratorLobbyProp
       show(e instanceof Error ? e.message : 'Failed to start game', 'error');
     } finally {
       setStarting(false);
-      setConfirmStart(false);
     }
   };
 
@@ -94,7 +92,7 @@ export function ModeratorLobby({ session, onStart, onLeave }: ModeratorLobbyProp
             <div className="flex items-center gap-2 mb-4">
               <Users className="w-5 h-5 text-blue-400" />
               <h2 className="text-white font-bold text-lg">Players</h2>
-              <span className="text-slate-500 text-sm">({playerCount}/3)</span>
+              <span className="text-slate-500 text-sm">({playerCount}/8)</span>
             </div>
             <PlayerList
               players={players}
@@ -110,31 +108,27 @@ export function ModeratorLobby({ session, onStart, onLeave }: ModeratorLobbyProp
               No presentation uploaded yet.
             </div>
           )}
-          {hasPresentation && playerCount < 3 && playerCount > 0 && (
+          {hasPresentation && playerCount < 3 && (
             <div className="flex items-center gap-2 text-amber-400 text-sm bg-amber-500/10 px-4 py-2 rounded-xl border border-amber-500/30">
               <AlertTriangle className="w-4 h-4" />
-              Only {playerCount} player(s) joined. You can start with fewer than 3.
+              Need at least 3 players to start ({playerCount}/3 joined).
             </div>
           )}
 
           {/* Start button */}
           <button
             onClick={() => {
-              if (playerCount === 0) {
-                show('At least 1 player must join before starting.', 'error');
+              if (playerCount < 3) {
+                show('At least 3 players must join before starting.', 'error');
                 return;
               }
               if (!hasPresentation) {
                 show('Please upload a presentation before starting.', 'error');
                 return;
               }
-              if (playerCount < 3) {
-                setConfirmStart(true);
-              } else {
-                handleStart();
-              }
+              handleStart();
             }}
-            disabled={starting || playerCount === 0 || !hasPresentation}
+            disabled={starting || playerCount < 3 || !hasPresentation}
             className="w-full max-w-sm flex items-center justify-center gap-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-bold text-lg rounded-2xl transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-emerald-500/20 disabled:shadow-none disabled:cursor-not-allowed"
           >
             {starting ? (
@@ -146,39 +140,6 @@ export function ModeratorLobby({ session, onStart, onLeave }: ModeratorLobbyProp
           </button>
         </div>
       </main>
-
-      {/* Confirm start with fewer players */}
-      {confirmStart && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl max-w-md w-full p-6 animate-scale-in">
-            <div className="flex items-start gap-4 mb-4">
-              <div className="p-3 bg-amber-500/15 text-amber-400 rounded-xl">
-                <AlertTriangle className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-white mb-1">Start with fewer players?</h3>
-                <p className="text-slate-400 text-sm">
-                  Only {playerCount} player(s) have joined. You can start now and they can join later.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setConfirmStart(false)}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-semibold hover:bg-slate-700"
-              >
-                Wait for more
-              </button>
-              <button
-                onClick={handleStart}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-500"
-              >
-                Start now
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Confirm leave */}
       {confirmLeave && (
