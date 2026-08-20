@@ -8,6 +8,7 @@ import { usePlayers, useConnectionStatus } from '@/lib/hooks';
 import { PresentationViewer } from './PresentationViewer';
 import { BuzzerStatus } from './Buzzer';
 import { Scoreboard } from './Scoreboard';
+import { Chat } from './Chat';
 import { PlayerList } from './PlayerList';
 import { ConnectionIndicator } from './ConnectionIndicator';
 import { ConfirmationDialog } from './ConfirmationDialog';
@@ -730,8 +731,8 @@ export function ModeratorDashboard({
                 Players
               </h3>
 
-              <span className="text-slate-500 text-xs">
-                ({players.length}/3)
+                <span className="text-slate-500 text-xs">
+                ({players.length}/8)
               </span>
             </div>
 
@@ -756,13 +757,27 @@ export function ModeratorDashboard({
 
           </div>
 
-          <Scoreboard
+                    <Scoreboard
             players={players}
             highlightPlayerId={
               game.buzzer_winner_player_id
             }
             title="Scoreboard"
           />
+
+          <div className="glass rounded-2xl p-3 flex flex-col h-72">
+            <h3 className="text-white font-bold text-sm mb-2 flex-shrink-0">
+              Chat
+            </h3>
+            <div className="flex-1 min-h-0">
+              <Chat
+                gameId={gameId}
+                senderToken={modToken}
+                selfName={session.moderatorName}
+                selfType="moderator"
+              />
+            </div>
+          </div>
 
         </aside>
       </div>
