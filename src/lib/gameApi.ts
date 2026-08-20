@@ -4,6 +4,7 @@ import type {
   Player,
   ModeratorSession,
   PlayerSession,
+  ChatMessage,
 } from './types';
 
 const MOD_SESSION_KEY = 'jeopardy_mod_session';
@@ -414,6 +415,44 @@ export async function fetchPlayers(
   }
 
   return (data || []) as Player[];
+}
+
+// ---------- Chat ----------
+
+export async function fetchMessages(
+  gameId: string
+): Promise<ChatMessage[]> {
+  const { data, error } =
+    await supabase
+      .from('messages')
+      .select('*')
+      .eq('game_id', gameId)
+      .order('created_at', { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data || []) as ChatMessage[];
+}
+
+export async function sendChatMessage(
+  gameId: string,
+  senderToken: string,
+  body: string
+): Promise<ChatMessage> {
+  const { data, error } =
+    await supabase.rpc('send_chat_message', {
+      p_game_id: gameId,
+      p_sender_token: senderToken,
+      p_body: body,
+    });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data as ChatMessage[])[0];
 }
 
 // ---------- Presentation upload ----------
