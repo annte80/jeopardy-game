@@ -17,6 +17,7 @@ import {
 import { PresentationViewer } from './PresentationViewer';
 import { Buzzer } from './Buzzer';
 import { Scoreboard } from './Scoreboard';
+import { Chat } from './Chat';
 import { ConnectionIndicator } from './ConnectionIndicator';
 import { ConfirmationDialog } from './ConfirmationDialog';
 import { setMuted, isMuted } from '@/lib/sound';
@@ -264,14 +265,13 @@ export function PlayerGameView({
             />
           </div>
 
-          <div className="order-3 md:order-2 flex-shrink-0 md:flex-1 min-h-0 border-t border-slate-800/60 px-3 py-3 flex flex-col">
-            <h3 className="text-slate-500 text-xs font-bold tracking-wider uppercase mb-2 flex-shrink-0">
-              Chat
-            </h3>
-            <div className="h-32 md:h-auto md:flex-1 min-h-0 flex items-center justify-center rounded-xl bg-slate-900/40 border border-slate-800">
-              <p className="text-slate-600 text-sm text-center px-4">
-                Chat is coming soon
-              </p>
+                     <div className="h-56 md:h-auto md:flex-1 min-h-0 rounded-xl bg-slate-900/40 border border-slate-800 p-2">
+              <Chat
+                gameId={session.gameId}
+                senderToken={session.playerToken}
+                selfName={session.playerName}
+                selfType="player"
+              />
             </div>
           </div>
 
