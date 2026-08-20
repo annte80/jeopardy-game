@@ -25,10 +25,9 @@ interface BuzzerProps {
   buzzerStatus: BuzzerStatus;
   winnerPlayerId: string | null;
   players: Player[];
-  soundEnabled: boolean;
+    soundEnabled: boolean;
+  compact?: boolean;
 }
-
-const BUZZER_SIZE = 'w-28 h-28 sm:w-36 sm:h-36';
 
 export function Buzzer({
   gameId,
@@ -39,8 +38,13 @@ export function Buzzer({
   buzzerStatus,
   winnerPlayerId,
   players,
-  soundEnabled,
+    soundEnabled,
+  compact = false,
 }: BuzzerProps) {
+  const BUZZER_SIZE = compact
+    ? 'w-20 h-20 sm:w-24 sm:h-24'
+    : 'w-28 h-28 sm:w-36 sm:h-36';
+
   const [buzzing, setBuzzing] = useState(false);
   const [buzzSent, setBuzzSent] = useState(false);
 
