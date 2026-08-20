@@ -68,3 +68,12 @@ export interface PlayerSession {
   // Player profile picture URL
   playerAvatarUrl: string | null;
 }
+
+export interface ChatMessage {
+  id: string;
+  sender_type: 'player' | 'moderator';
+  sender_id: string | null;
+  sender_name: string;
+  body: string;
+  created_at: string;
+}
