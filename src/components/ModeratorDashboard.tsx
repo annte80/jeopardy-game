@@ -395,12 +395,8 @@ export function ModeratorDashboard({
   }, [
     game?.buzzer_status,
     game?.buzzer_winner_player_id,
-    muted,
+        muted,
   ]);
-
-  const winner = players.find(
-    (p) => p.id === game.buzzer_winner_player_id
-  );
 
   return (
     <div className="min-h-screen w-full min-w-0 overflow-x-hidden bg-gradient-game flex flex-col">
@@ -684,35 +680,47 @@ export function ModeratorDashboard({
           {/* Buzzer status */}
           <div className="flex-shrink-0 min-w-0">
 
-            <BuzzerStatus
+                        <BuzzerStatus
               buzzerStatus={game.buzzer_status}
-              winnerPlayerId={game.buzzer_winner_player_id}
+              buzzOrder={game.buzz_order}
               players={players}
             />
 
-            {game.buzzer_status === 'locked' && winner && (
-              <div className="flex items-center gap-2 mt-2">
+            {game.buzz_order.length > 0 && (
+              <div className="flex flex-col gap-2 mt-2">
+                {game.buzz_order.map((buzzPlayerId, index) => {
+                  const p = players.find((pl) => pl.id === buzzPlayerId);
 
-                <button
-                  onClick={() =>
-                    void adjustScore(winner.id, 100)
-                  }
-                  className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm transition-colors"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  Award Correct (+100)
-                </button>
+                  if (!p) return null;
 
-                <button
-                  onClick={() =>
-                    void adjustScore(winner.id, -100)
-                  }
-                  className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-red-600/80 hover:bg-red-600 text-white rounded-xl font-bold text-sm transition-colors"
-                >
-                  <XCircle className="w-4 h-4" />
-                  Mark Incorrect (-100)
-                </button>
+                  return (
+                    <div key={buzzPlayerId} className="flex items-center gap-2">
+                      <span className="text-slate-400 text-xs w-16 flex-shrink-0 truncate">
+                        {index + 1}. {p.player_name}
+                      </span>
 
+                      <button
+                        onClick={() =>
+                          void adjustScore(p.id, 100)
+                        }
+                        className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm transition-colors"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        +100
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          void adjustScore(p.id, -100)
+                        }
+                        className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-red-600/80 hover:bg-red-600 text-white rounded-xl font-bold text-sm transition-colors"
+                      >
+                        <XCircle className="w-4 h-4" />
+                        -100
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
