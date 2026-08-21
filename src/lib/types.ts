@@ -23,9 +23,9 @@ export interface Game {
   current_slide: number;
   game_status: GameStatus;
   buzzer_status: BuzzerStatus;
-  buzzer_winner_player_id: string | null;
+    buzzer_winner_player_id: string | null;
   buzzer_enabled_at: string | null;
-
+  buzz_order: string[];
   // Used hyperlinks on the main 10+ link slide
   used_main_slide_links: string[];
 
