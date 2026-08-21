@@ -700,6 +700,8 @@ export async function claimBuzz(
 ): Promise<{
   won: boolean;
   winnerPlayerId: string | null;
+  rank: number | null;
+  buzzOrder: string[];
 }> {
   console.log(
     'BUZZER: sending claim',
@@ -766,11 +768,13 @@ export async function claimBuzz(
     }
   );
 
-  return {
+    return {
     won: Boolean(row.won),
     winnerPlayerId:
       row.winner_player_id ??
       null,
+    rank: row.rank ?? null,
+    buzzOrder: row.buzz_order ?? [],
   };
 }
 
