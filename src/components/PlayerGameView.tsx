@@ -250,6 +250,7 @@ export function PlayerGameView({
               playerNumber={session.playerNumber}
               buzzerStatus={game.buzzer_status}
               winnerPlayerId={game.buzzer_winner_player_id}
+              buzzOrder={game.buzz_order}
               players={players}
               soundEnabled={!muted}
               compact
