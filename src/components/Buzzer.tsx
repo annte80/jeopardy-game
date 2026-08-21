@@ -16,6 +16,23 @@ import {
   playBuzzWin,
 } from '@/lib/sound';
 
+function ordinal(n: number): string {
+  const rem100 = n % 100;
+
+  if (rem100 >= 11 && rem100 <= 13) return `${n}TH`;
+
+  switch (n % 10) {
+    case 1:
+      return `${n}ST`;
+    case 2:
+      return `${n}ND`;
+    case 3:
+      return `${n}RD`;
+    default:
+      return `${n}TH`;
+  }
+}
+
 interface BuzzerProps {
   gameId: string;
   playerId: string;
@@ -24,8 +41,9 @@ interface BuzzerProps {
   playerNumber: number;
   buzzerStatus: BuzzerStatus;
   winnerPlayerId: string | null;
+  buzzOrder: string[];
   players: Player[];
-    soundEnabled: boolean;
+  soundEnabled: boolean;
   compact?: boolean;
 }
 
@@ -37,8 +55,9 @@ export function Buzzer({
   playerNumber,
   buzzerStatus,
   winnerPlayerId,
+  buzzOrder,
   players,
-    soundEnabled,
+  soundEnabled,
   compact = false,
 }: BuzzerProps) {
   const BUZZER_SIZE = compact
@@ -48,10 +67,7 @@ export function Buzzer({
   const [buzzing, setBuzzing] = useState(false);
   const [buzzSent, setBuzzSent] = useState(false);
 
-  const [localResult, setLocalResult] = useState<{
-    won: boolean;
-    winnerPlayerId: string | null;
-  } | null>(null);
+  const [myRank, setMyRank] = useState<number | null>(null);
 
   const [showResultNotification, setShowResultNotification] =
     useState(false);
@@ -71,7 +87,7 @@ export function Buzzer({
   useEffect(() => {
     if (buzzerStatus === 'disabled') {
       setBuzzSent(false);
-      setLocalResult(null);
+      setMyRank(null);
       setShowResultNotification(false);
 
       playedWinSoundRef.current = false;
@@ -79,69 +95,86 @@ export function Buzzer({
     }
   }, [buzzerStatus]);
 
-  const effectiveWinnerId =
-    localResult?.winnerPlayerId ?? winnerPlayerId;
+  const alreadyBuzzed =
+    buzzSent || buzzOrder.includes(playerId);
 
-  const effectiveLocked =
-    buzzerStatus === 'locked' || localResult !== null;
+  const effectiveMyRank =
+    myRank ??
+    (buzzOrder.includes(playerId)
+      ? buzzOrder.indexOf(playerId) + 1
+      : null);
 
-  const winner = players.find((p) => p.id === effectiveWinnerId);
+  const winner = players.find(
+    (p) => p.id === winnerPlayerId
+  );
 
-  const isWinner = effectiveWinnerId === playerId;
+  const isWinner =
+    effectiveMyRank === 1;
 
-  const lostAfterBuzzing =
-    buzzSent && localResult !== null && !localResult.won;
-
-  const enabled = buzzerStatus === 'enabled' && !effectiveLocked;
+  const enabled =
+    buzzerStatus !== 'disabled' &&
+    !alreadyBuzzed;
 
   useEffect(() => {
     if (
       soundEnabled &&
-      effectiveLocked &&
       isWinner &&
       !playedWinSoundRef.current
     ) {
       playBuzzWin();
       playedWinSoundRef.current = true;
     }
-  }, [soundEnabled, effectiveLocked, isWinner]);
+  }, [
+    soundEnabled,
+    isWinner,
+  ]);
 
   const triggerResultNotification = useCallback(() => {
-    if (!effectiveWinnerId) return;
+    if (!winnerPlayerId) return;
 
-    if (notifiedWinnerRef.current === effectiveWinnerId) {
+    if (
+      notifiedWinnerRef.current === winnerPlayerId
+    ) {
       return;
     }
 
-    notifiedWinnerRef.current = effectiveWinnerId;
+    notifiedWinnerRef.current =
+      winnerPlayerId;
 
     setShowResultNotification(true);
-  }, [effectiveWinnerId]);
+  }, [winnerPlayerId]);
 
   const dismissResultNotification = useCallback(() => {
     setShowResultNotification(false);
   }, []);
 
   useEffect(() => {
-    if (buzzerStatus === 'locked' && winnerPlayerId) {
+    if (
+      buzzerStatus === 'locked' &&
+      winnerPlayerId
+    ) {
       triggerResultNotification();
     }
-  }, [buzzerStatus, winnerPlayerId, triggerResultNotification]);
-
-  useEffect(() => {
-    if (localResult?.winnerPlayerId) {
-      triggerResultNotification();
-    }
-  }, [localResult, triggerResultNotification]);
+  }, [
+    buzzerStatus,
+    winnerPlayerId,
+    triggerResultNotification,
+  ]);
 
   const handleBuzz = useCallback(async () => {
-    if (!enabled || buzzing || buzzSent) {
+    if (
+      !enabled ||
+      buzzing ||
+      buzzSent
+    ) {
       return;
     }
 
     const now = Date.now();
 
-    if (now - lastBuzzRef.current < 500) {
+    if (
+      now - lastBuzzRef.current < 500
+    ) {
       return;
     }
 
@@ -155,25 +188,44 @@ export function Buzzer({
     }
 
     try {
-      const result = await claimBuzz(gameId, playerId, playerToken);
+      const result = await claimBuzz(
+        gameId,
+        playerId,
+        playerToken
+      );
 
-      setLocalResult(result);
+      setMyRank(result.rank);
     } catch (error) {
-      console.error('Buzzer claim failed:', error);
+      console.error(
+        'Buzzer claim failed:',
+        error
+      );
 
       setBuzzSent(false);
     } finally {
       setBuzzing(false);
     }
-  }, [enabled, buzzing, buzzSent, soundEnabled, gameId, playerId, playerToken]);
+  }, [
+    enabled,
+    buzzing,
+    buzzSent,
+    soundEnabled,
+    gameId,
+    playerId,
+    playerToken,
+  ]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.code !== 'Space' && e.key !== ' ') {
+      if (
+        e.code !== 'Space' &&
+        e.key !== ' '
+      ) {
         return;
       }
 
-      const target = e.target as HTMLElement | null;
+      const target =
+        e.target as HTMLElement | null;
 
       const tag = target?.tagName;
 
@@ -201,15 +253,25 @@ export function Buzzer({
       handleBuzz();
     };
 
-    window.addEventListener('keydown', handler, true);
+    window.addEventListener(
+      'keydown',
+      handler,
+      true
+    );
 
     return () => {
-      window.removeEventListener('keydown', handler, true);
+      window.removeEventListener(
+        'keydown',
+        handler,
+        true
+      );
     };
   }, [handleBuzz]);
 
   const resultNotification =
-    showResultNotification && effectiveWinnerId && winner ? (
+    showResultNotification &&
+    winnerPlayerId &&
+    winner ? (
       <div
         onClick={dismissResultNotification}
         className="
@@ -224,8 +286,10 @@ export function Buzzer({
           px-4
         "
       >
+        {/* Backdrop */}
         <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
 
+        {/* Result card */}
         <div
           className={`
             relative
@@ -257,30 +321,93 @@ export function Buzzer({
         >
           {isWinner ? (
             <>
-              <Trophy className="w-16 h-16 sm:w-24 sm:h-24 text-amber-300 mx-auto mb-5 animate-bounce" />
+              <Trophy
+                className="
+                  w-16
+                  h-16
+                  sm:w-24
+                  sm:h-24
+                  text-amber-300
+                  mx-auto
+                  mb-5
+                  animate-bounce
+                "
+              />
 
-              <p className="text-emerald-300 font-black text-4xl sm:text-7xl tracking-tight text-glow-gold">
+              <p
+                className="
+                  text-emerald-300
+                  font-black
+                  text-4xl
+                  sm:text-7xl
+                  tracking-tight
+                  text-glow-gold
+                "
+              >
                 YOU BUZZED FIRST!
               </p>
 
-              <p className="mt-4 text-white text-xl sm:text-3xl font-bold">
+              <p
+                className="
+                  mt-4
+                  text-white
+                  text-xl
+                  sm:text-3xl
+                  font-bold
+                "
+              >
                 You were the fastest!
               </p>
             </>
           ) : (
             <>
-              <XCircle className="w-16 h-16 sm:w-24 sm:h-24 text-red-400 mx-auto mb-5" />
+              <XCircle
+                className="
+                  w-16
+                  h-16
+                  sm:w-24
+                  sm:h-24
+                  text-red-400
+                  mx-auto
+                  mb-5
+                "
+              />
 
-              <p className="text-red-300 font-black text-4xl sm:text-7xl tracking-tight">
+              <p
+                className="
+                  text-red-300
+                  font-black
+                  text-4xl
+                  sm:text-7xl
+                  tracking-tight
+                "
+              >
                 TOO SLOW!
               </p>
 
-              <p className="mt-5 text-white text-xl sm:text-3xl font-bold">
-                <span className="text-amber-300">{winner.player_name}</span>{' '}
+              <p
+                className="
+                  mt-5
+                  text-white
+                  text-xl
+                  sm:text-3xl
+                  font-bold
+                "
+              >
+                <span className="text-amber-300">
+                  {winner.player_name}
+                </span>{' '}
                 buzzed first!
               </p>
 
-              <p className="mt-3 text-slate-400 text-base sm:text-xl">
+              <p
+                className="
+                  mt-3
+                  text-slate-400
+                  text-base
+                  sm:text-xl
+                "
+              >
                 Player {winner.player_number}
               </p>
             </>
@@ -295,12 +422,18 @@ export function Buzzer({
 
   const fullscreenNotificationHost =
     typeof document !== 'undefined'
-      ? document.getElementById('buzzer-fullscreen-notification')
+      ? document.getElementById(
+          'buzzer-fullscreen-notification'
+        )
       : null;
 
   const fullscreenNotification =
-    fullscreenNotificationHost && resultNotification
-      ? createPortal(resultNotification, fullscreenNotificationHost)
+    fullscreenNotificationHost &&
+    resultNotification
+      ? createPortal(
+          resultNotification,
+          fullscreenNotificationHost
+        )
       : null;
 
   if (buzzerStatus === 'disabled') {
@@ -339,7 +472,7 @@ export function Buzzer({
     );
   }
 
-  if (effectiveLocked) {
+  if (alreadyBuzzed) {
     if (isWinner) {
       return (
         <>
@@ -369,44 +502,8 @@ export function Buzzer({
               </div>
             </div>
 
-            <p className="text-emerald-400/70 text-xs">Wait for the host</p>
-          </div>
-        </>
-      );
-    }
-
-    if (lostAfterBuzzing) {
-      return (
-        <>
-          {fullscreenNotification}
-
-          <div className="w-full flex flex-col items-center gap-2 py-3 animate-shake">
-            <div
-              className={`
-                ${BUZZER_SIZE}
-                flex
-                items-center
-                justify-center
-                rounded-full
-                bg-red-500/10
-                border-4
-                border-red-500/60
-                no-select
-              `}
-            >
-              <div className="text-center px-2">
-                <XCircle className="w-8 h-8 text-red-400 mx-auto mb-1" />
-
-                <p className="text-red-300 font-black text-sm sm:text-base leading-tight">
-                  TOO SLOW!
-                </p>
-              </div>
-            </div>
-
-            <p className="text-slate-400 text-xs">
-              {winner
-                ? `${winner.player_name} buzzed first`
-                : 'Someone beat you to it'}
+            <p className="text-emerald-400/70 text-xs">
+              Wait for the host
             </p>
           </div>
         </>
@@ -425,25 +522,23 @@ export function Buzzer({
               items-center
               justify-center
               rounded-full
-              bg-slate-800/50
+              bg-blue-500/10
               border-4
-              border-slate-600
+              border-blue-500/50
               no-select
             `}
           >
             <div className="text-center px-2">
-              <XCircle className="w-6 h-6 text-slate-500 mx-auto mb-1" />
-
-              <p className="text-white font-bold text-xs sm:text-sm leading-tight">
-                {winner
-                  ? `${winner.player_name.toUpperCase()} BUZZED FIRST`
-                  : 'BUZZER LOCKED'}
+              <p className="text-blue-300 font-black text-lg sm:text-xl leading-tight">
+                {effectiveMyRank ? ordinal(effectiveMyRank) : '—'}
               </p>
             </div>
           </div>
 
-          <p className="text-slate-500 text-xs">
-            Player {winner?.player_number || '?'}
+          <p className="text-blue-400/70 text-xs">
+            {winner && winner.id !== playerId
+              ? `${winner.player_name} buzzed first`
+              : 'Wait for the host'}
           </p>
         </div>
       </>
@@ -457,11 +552,13 @@ export function Buzzer({
       <div className="w-full flex flex-col items-center gap-2 py-3">
         <div className="text-center mb-1">
           <p className="text-amber-400 font-bold text-sm sm:text-base tracking-wider animate-pulse">
-            QUESTION IS ACTIVE
+            {buzzOrder.length > 0 ? 'YOU CAN STILL BUZZ' : 'QUESTION IS ACTIVE'}
           </p>
 
           <p className="text-slate-400 text-xs">
-            Wait for it... then BUZZ! (or press SPACE)
+            {buzzOrder.length > 0
+              ? `${buzzOrder.length} player(s) already buzzed`
+              : 'Wait for it... then BUZZ! (or press SPACE)'}
           </p>
         </div>
 
@@ -530,28 +627,28 @@ export function Buzzer({
 
 interface BuzzerStatusProps {
   buzzerStatus: BuzzerStatus;
-  winnerPlayerId: string | null;
+  buzzOrder: string[];
   players: Player[];
 }
 
 export function BuzzerStatus({
   buzzerStatus,
-  winnerPlayerId,
+  buzzOrder,
   players,
 }: BuzzerStatusProps) {
-  const winner = players.find((p) => p.id === winnerPlayerId);
-
   if (buzzerStatus === 'disabled') {
     return (
       <div className="flex items-center gap-3 px-4 py-3 bg-slate-800/60 border border-slate-700 rounded-xl">
         <Lock className="w-5 h-5 text-slate-500" />
 
-        <span className="text-slate-400 font-semibold">Buzzer Disabled</span>
+        <span className="text-slate-400 font-semibold">
+          Buzzer Disabled
+        </span>
       </div>
     );
   }
 
-  if (buzzerStatus === 'enabled') {
+  if (buzzOrder.length === 0) {
     return (
       <div className="flex items-center gap-3 px-4 py-3 bg-amber-500/10 border border-amber-500/40 rounded-xl animate-pulse">
         <div className="w-3 h-3 rounded-full bg-amber-400 animate-pulse" />
@@ -564,14 +661,43 @@ export function BuzzerStatus({
   }
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 bg-emerald-500/10 border border-emerald-500/40 rounded-xl animate-celebrate">
-      <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+    <div className="px-4 py-3 bg-emerald-500/10 border border-emerald-500/40 rounded-xl animate-celebrate">
+      <div className="flex items-center gap-2 mb-2">
+        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
 
-      <span className="text-emerald-300 font-bold">
-        {winner
-          ? `${winner.player_name} (Player ${winner.player_number}) buzzed first!`
-          : 'Buzzer locked'}
-      </span>
+        <span className="text-emerald-300 font-bold text-sm">
+          Buzz order
+        </span>
+      </div>
+
+      <ol className="flex flex-col gap-1">
+        {buzzOrder.map((playerId, index) => {
+          const p = players.find((pl) => pl.id === playerId);
+
+          return (
+            <li
+              key={playerId}
+              className={`flex items-center gap-2 text-sm ${
+                index === 0
+                  ? 'text-emerald-300 font-bold'
+                  : 'text-slate-300'
+              }`}
+            >
+              <span className="w-5 text-right tabular-nums">
+                {index + 1}.
+              </span>
+
+              <span>{p ? p.player_name : 'Unknown player'}</span>
+
+              {p && (
+                <span className="text-slate-500 text-xs">
+                  (P{p.player_number})
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }
