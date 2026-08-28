@@ -190,12 +190,13 @@ export function PlayerGameView({
           className="relative flex-1 min-h-0 bg-black"
         >
 
-          {game.presentation_path ? (
+                    {game.presentation_path ? (
             <PresentationViewer
               path={game.presentation_path}
               currentPage={game.current_slide}
               totalPages={game.presentation_total_pages}
               showFullscreenButton={false}
+              fullscreenRef={presentationRef}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
