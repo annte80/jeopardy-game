@@ -266,7 +266,11 @@ export function PlayerGameView({
             />
           </div>
 
-                     <div className="h-56 md:h-auto md:flex-1 min-h-0 rounded-xl bg-slate-900/40 border border-slate-800 p-2">
+                               <div className="order-3 md:order-2 flex-shrink-0 md:flex-1 min-h-0 border-t border-slate-800/60 px-3 py-3 flex flex-col">
+            <h3 className="text-slate-500 text-xs font-bold tracking-wider uppercase mb-2 flex-shrink-0">
+              Chat
+            </h3>
+            <div className="h-56 md:h-auto md:flex-1 min-h-0 rounded-xl bg-slate-900/40 border border-slate-800 p-2">
               <Chat
                 gameId={session.gameId}
                 senderToken={session.playerToken}
