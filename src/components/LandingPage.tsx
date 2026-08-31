@@ -36,7 +36,7 @@ export function LandingPage({ onCreateGame, onJoinGame }: LandingPageProps) {
           <p className="text-lg sm:text-xl text-slate-400 mb-12 font-medium">
             Host a private game show with your friends.
             <br className="hidden sm:block" />
-            One moderator, three players, one unforgettable night.
+                        One moderator, up to 8 players, one unforgettable night.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
