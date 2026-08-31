@@ -57,29 +57,10 @@ export function LandingPage({ onCreateGame, onJoinGame }: LandingPageProps) {
           </div>
         </div>
 
-        {/* Feature cards */}
-        <div className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl w-full">
-          {[
-            { icon: '🎯', title: 'Synchronized Slides', desc: 'Everyone watches the same presentation in real time' },
-            { icon: '⚡', title: 'First Buzzer Wins', desc: 'Server-side lock ensures fair play' },
-            { icon: '🏆', title: 'Live Scoreboard', desc: 'Track scores as the game unfolds' },
-          ].map((f, i) => (
-            <div
-              key={i}
-              className="glass rounded-2xl p-5 animate-slide-up"
-              style={{ animationDelay: `${0.2 + i * 0.1}s` }}
-            >
-              <div className="text-3xl mb-2">{f.icon}</div>
-              <h3 className="text-white font-bold mb-1">{f.title}</h3>
-              <p className="text-slate-400 text-sm">{f.desc}</p>
-            </div>
-          ))}
-        </div>
+        
       </main>
 
-      <footer className="relative z-10 text-center py-6 text-slate-600 text-sm">
-        Built for private game nights. No accounts, no signups.
-      </footer>
+      
     </div>
   );
 }
