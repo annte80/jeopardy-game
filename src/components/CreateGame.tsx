@@ -140,7 +140,7 @@ export function CreateGame({ onBack, onCreated }: CreateGameProps) {
                   <div className="p-3 bg-slate-800 group-hover:bg-blue-600/20 rounded-xl transition-colors">
                     <Upload className="w-8 h-8 text-slate-500 group-hover:text-blue-400" />
                   </div>
-                  <span className="text-slate-400 font-medium">Click to upload PDF or PPTX</span>
+                  <span className="text-slate-400 font-medium">Click to upload PDF</span>
                   <span className="text-slate-600 text-sm">Your presentation is the source of truth</span>
                 </button>
               ) : (
