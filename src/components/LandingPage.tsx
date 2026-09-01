@@ -29,14 +29,17 @@ export function LandingPage({ onCreateGame, onJoinGame }: LandingPageProps) {
       {/* Main content */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-16">
         <div className="text-center max-w-3xl animate-slide-up">
-          <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tight mb-4">
-            <span className="text-white">JEOPARDY</span>{' '}
+                    <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tight mb-4">
+            <span className="text-white">ANIVARA</span>{' '}
             <span className="text-amber-400 text-glow-gold">NIGHT</span>
           </h1>
+          <p className="text-slate-500 text-sm mb-4">
+            Formerly Jeopardy Night — same custom Jeopardy-style trivia game, new name.
+          </p>
           <p className="text-lg sm:text-xl text-slate-400 mb-12 font-medium">
             Host a private game show with your friends.
             <br className="hidden sm:block" />
-                        One moderator, up to 8 players, one unforgettable night.
+            One moderator, up to 8 players, one unforgettable night.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
