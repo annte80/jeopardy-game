@@ -1,4 +1,4 @@
-import { GamepadIcon, ArrowRight, LogIn } from 'lucide-react';
+import { GamepadIcon, ArrowRight, LogIn, Hammer, CalendarDays } from 'lucide-react';
 
 interface LandingPageProps {
   onCreateGame: () => void;
@@ -42,21 +42,43 @@ export function LandingPage({ onCreateGame, onJoinGame }: LandingPageProps) {
             One moderator, up to 8 players, one unforgettable night.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={onCreateGame}
-              className="group flex items-center justify-center gap-2 px-8 py-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-lg rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-amber-500/20"
+                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl w-full mx-auto items-stretch">
+
+            {/* Left: Game Maker - Coming Soon */}
+            <div className="flex flex-col items-center justify-center gap-2 px-6 py-6 bg-slate-900/40 border border-slate-800 rounded-2xl opacity-60 cursor-not-allowed">
+              <Hammer className="w-6 h-6 text-slate-500" />
+              <span className="text-slate-400 font-bold text-sm">Game Maker</span>
+              <span className="text-slate-600 text-xs uppercase tracking-wider">Coming Soon</span>
+            </div>
+
+            {/* Center: Create + Join, stacked */}
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={onCreateGame}
+                className="group flex items-center justify-center gap-2 px-8 py-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-lg rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-amber-500/20"
+              >
+                Create Game
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button
+                onClick={onJoinGame}
+                className="group flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm rounded-xl transition-all hover:scale-[1.02] active:scale-95 border border-slate-700"
+              >
+                <LogIn className="w-4 h-4 text-blue-400" />
+                Join Game
+              </button>
+            </div>
+
+            {/* Right: Anigenre Daily */}
+            
+              href="/anigenre"
+              className="flex flex-col items-center justify-center gap-2 px-6 py-6 bg-slate-900/40 hover:bg-slate-900/70 border border-slate-800 hover:border-teal-500/40 rounded-2xl transition-all hover:scale-[1.02]"
             >
-              Create Game
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button
-              onClick={onJoinGame}
-              className="group flex items-center justify-center gap-2 px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg rounded-2xl transition-all hover:scale-105 active:scale-95 border border-slate-700"
-            >
-              <LogIn className="w-5 h-5 text-blue-400" />
-              Join Game
-            </button>
+              <CalendarDays className="w-6 h-6 text-teal-400" />
+              <span className="text-white font-bold text-sm">Anigenre Daily</span>
+              <span className="text-slate-500 text-xs">New puzzle every day</span>
+            </a>
+
           </div>
         </div>
 
