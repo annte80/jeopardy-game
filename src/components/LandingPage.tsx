@@ -182,11 +182,11 @@ export function LandingPage({ onCreateGame, onJoinGame }: LandingPageProps) {
               </button>
             </div>
 
-            {/* Right: Anigenre Daily */}
+                        {/* Right: Anigenre Daily */}
             
               href="/anigenre"
               className="flex flex-col items-center justify-center gap-2 px-6 py-6 bg-slate-900/40 hover:bg-slate-900/70 border border-slate-800 hover:border-teal-500/40 rounded-2xl transition-all hover:scale-[1.02]"
-            <a>
+            >
               <CalendarDays className="w-6 h-6 text-teal-400" />
               <span className="text-white font-bold text-sm">Anigenre Daily</span>
               <span className="text-slate-500 text-xs">New puzzle every day</span>
