@@ -120,7 +120,7 @@ export function LandingPage({ onCreateGame, onJoinGame }: LandingPageProps) {
           </button>
 
           {pickerOpen && (
-            <div className="absolute right-0 mt-2 p-2 bg-slate-900 border border-slate-700 rounded-xl shadow-xl flex flex-col gap-1 z-20 min-w-[140px]">
+                        <div className="absolute right-0 mt-2 p-2 bg-slate-900 border border-slate-700 rounded-xl shadow-xl flex flex-col gap-1 z-[110] min-w-[140px]">
               {(Object.keys(THEMES) as ThemeId[]).map((id) => (
                 <button
                   key={id}
