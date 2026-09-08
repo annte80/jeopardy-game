@@ -20,6 +20,7 @@ import { Scoreboard } from './Scoreboard';
 import { Chat } from './Chat';
 import { ConnectionIndicator } from './ConnectionIndicator';
 import { ConfirmationDialog } from './ConfirmationDialog';
+import { useTheme } from '@/lib/theme';
 import { setMuted, isMuted } from '@/lib/sound';
 
 import type { PlayerSession, Game } from '@/lib/types';
@@ -119,15 +120,16 @@ export function PlayerGameView({
     };
   }, [toggleFullscreen]);
 
-  const me = players.find((p) => p.id === session.playerId);
+    const me = players.find((p) => p.id === session.playerId);
+  const { theme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-gradient-game flex flex-col">
+    <div className={`min-h-screen ${theme.bgGradientClass} flex flex-col`}>
 
       <header className="flex items-center justify-between px-3 py-2 md:px-4 md:py-3 border-b border-slate-800 bg-slate-950/50 backdrop-blur-sm flex-shrink-0">
 
         <div className="flex items-center gap-2">
-          <Crown className="w-4 h-4 text-amber-400" />
+          <Crown className={`w-4 h-4 ${theme.accentTextClass}`} />
 
           <span className="text-white font-bold text-sm md:text-base">
             {game.game_name}
@@ -175,7 +177,7 @@ export function PlayerGameView({
 
         </div>
 
-        <span className="text-amber-400 font-bold text-lg tabular-nums">
+                <span className={`${theme.accentTextClass} font-bold text-lg tabular-nums`}>
           ${me?.score || 0}
         </span>
 
