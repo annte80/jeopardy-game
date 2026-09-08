@@ -5,6 +5,8 @@ import { RoomCode } from './RoomCode';
 import { PlayerList } from './PlayerList';
 import { ConnectionIndicator } from './ConnectionIndicator';
 import { useToast } from './Toast';
+import { useTheme } from '@/lib/theme';
+import { ThemePicker } from './ThemePicker';
 import { modSetGameStatus, modRemovePlayer } from '@/lib/gameApi';
 import type { ModeratorSession, PlayerSession } from '@/lib/types';
 
@@ -22,6 +24,7 @@ export function ModeratorLobby({ session, onStart, onLeave }: ModeratorLobbyProp
   const [starting, setStarting] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
   const { show } = useToast();
+  const { theme } = useTheme();
 
   const joinUrl = `${window.location.origin}/join/${session.roomCode}`;
   const playerCount = players.length;
@@ -52,17 +55,17 @@ export function ModeratorLobby({ session, onStart, onLeave }: ModeratorLobbyProp
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-game flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
+      <div className={`min-h-screen ${theme.bgGradientClass} flex items-center justify-center`}>
+        <Loader2 className={`w-8 h-8 ${theme.accentTextClass} animate-spin`} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-game flex flex-col">
+    <div className={`min-h-screen ${theme.bgGradientClass} flex flex-col`}>
       <header className="flex items-center justify-between px-6 py-4 md:px-8 border-b border-slate-800">
         <div className="flex items-center gap-3">
-          <Crown className="w-5 h-5 text-amber-400" />
+          <Crown className={`w-5 h-5 ${theme.accentTextClass}`} />
           <h1 className="text-white font-bold text-lg">{session.gameName}</h1>
         </div>
         <div className="flex items-center gap-3">
@@ -173,6 +176,8 @@ export function ModeratorLobby({ session, onStart, onLeave }: ModeratorLobbyProp
           </div>
         </div>
       )}
+
+      <ThemePicker />
     </div>
   );
 }
@@ -189,22 +194,23 @@ export function PlayerLobby({ session, onLeave }: PlayerLobbyProps) {
   const { players } = usePlayers(session.gameId);
   const connectionStatus = useConnectionStatus();
   const { show } = useToast();
+  const { theme } = useTheme();
 
   useHeartbeat(session.playerId, session.playerToken);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-game flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
+      <div className={`min-h-screen ${theme.bgGradientClass} flex items-center justify-center`}>
+        <Loader2 className={`w-8 h-8 ${theme.accentTextClass} animate-spin`} />
       </div>
     );
   }
 
   // If game moved to playing, the parent will switch views via game subscription
   return (
-    <div className="min-h-screen bg-gradient-game flex flex-col">
+    <div className={`min-h-screen ${theme.bgGradientClass} flex flex-col`}>
       <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-        <h1 className="text-white font-bold text-lg">{game?.game_name || 'Jeopardy Night'}</h1>
+        <h1 className="text-white font-bold text-lg">{game?.game_name || 'Anivara Night'}</h1>
         <ConnectionIndicator status={connectionStatus} compact />
       </header>
 
@@ -244,6 +250,8 @@ export function PlayerLobby({ session, onLeave }: PlayerLobbyProps) {
           </button>
         </div>
       </main>
+
+      <ThemePicker />
     </div>
   );
 }
