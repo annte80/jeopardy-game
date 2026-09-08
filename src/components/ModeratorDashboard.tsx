@@ -13,6 +13,7 @@ import { PlayerList } from './PlayerList';
 import { ConnectionIndicator } from './ConnectionIndicator';
 import { ConfirmationDialog } from './ConfirmationDialog';
 import { useToast } from './Toast';
+import { useTheme } from '@/lib/theme';
 import {
   modSetSlide,
   modSetBuzzer,
@@ -39,6 +40,7 @@ export function ModeratorDashboard({
   const { players, refetch } = usePlayers(session.gameId);
   const connectionStatus = useConnectionStatus();
   const { show } = useToast();
+  const { theme } = useTheme();
 
   const [muted, setMutedState] = useState(isMuted());
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -399,14 +401,14 @@ export function ModeratorDashboard({
   ]);
 
   return (
-    <div className="min-h-screen w-full min-w-0 overflow-x-hidden bg-gradient-game flex flex-col">
+    <div className={`min-h-screen w-full min-w-0 overflow-x-hidden ${theme.bgGradientClass} flex flex-col`}>
 
       {/* Top bar */}
       <header className="flex items-center justify-between px-4 py-3 md:px-6 border-b border-slate-800 bg-slate-950/50 backdrop-blur-sm">
         <div className="flex items-center gap-2">
-          <Crown className="w-5 h-5 text-amber-400" />
+          <Crown className={`w-5 h-5 ${theme.accentTextClass}`} />
           <span className="text-white font-bold text-sm md:text-lg">
-            JEOPARDY NIGHT
+            ANIVARA NIGHT
           </span>
         </div>
 
@@ -436,7 +438,7 @@ export function ModeratorDashboard({
 
           {/* Presentation controls */}
           <div className="glass rounded-2xl p-3">
-            <h3 className="text-amber-400 text-xs font-bold tracking-wider uppercase mb-2">
+            <h3 className={`${theme.accentTextClass} text-xs font-bold tracking-wider uppercase mb-2`}>
               Presentation
             </h3>
 
@@ -494,7 +496,7 @@ export function ModeratorDashboard({
 
           {/* Buzzer */}
           <div className="glass rounded-2xl p-3">
-            <h3 className="text-amber-400 text-xs font-bold tracking-wider uppercase mb-2">
+            <h3 className={`${theme.accentTextClass} text-xs font-bold tracking-wider uppercase mb-2`}>
               Buzzer
             </h3>
 
@@ -531,7 +533,7 @@ export function ModeratorDashboard({
 
           {/* Scores */}
           <div className="glass rounded-2xl p-3">
-            <h3 className="text-amber-400 text-xs font-bold tracking-wider uppercase mb-2">
+            <h3 className={`${theme.accentTextClass} text-xs font-bold tracking-wider uppercase mb-2`}>
               Scores
             </h3>
 
@@ -546,7 +548,7 @@ export function ModeratorDashboard({
                     {p.player_name}
                   </span>
 
-                  <span className="text-amber-400 text-sm font-bold tabular-nums w-16 flex-shrink-0 text-right">
+                  <span className={`${theme.accentTextClass} text-sm font-bold tabular-nums w-16 flex-shrink-0 text-right`}>
                     ${p.score}
                   </span>
 
@@ -593,7 +595,7 @@ export function ModeratorDashboard({
 
           {/* Game controls */}
           <div className="glass rounded-2xl p-3">
-            <h3 className="text-amber-400 text-xs font-bold tracking-wider uppercase mb-2">
+            <h3 className={`${theme.accentTextClass} text-xs font-bold tracking-wider uppercase mb-2`}>
               Game
             </h3>
 
