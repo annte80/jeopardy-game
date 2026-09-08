@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /secadmin
+Disallow: /join/
+
+Sitemap: https://jeopardynight.com/sitemap.xml
