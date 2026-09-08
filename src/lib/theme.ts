@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export type ThemeId = 'classic' | 'ocean' | 'crimson' | 'neon';
 
@@ -62,21 +62,37 @@ export const THEMES: Record<ThemeId, ThemeDef> = {
 };
 
 export const THEME_STORAGE_KEY = 'anivara_theme';
+const THEME_EVENT = 'anivara-theme-change';
+
+function readStoredTheme(): ThemeId {
+  const saved = localStorage.getItem(THEME_STORAGE_KEY);
+  if (saved && saved in THEMES) {
+    return saved as ThemeId;
+  }
+  return 'classic';
+}
 
 export function useTheme() {
-  const [themeId, setThemeIdState] = useState<ThemeId>('classic');
+  const [themeId, setThemeIdState] = useState<ThemeId>(readStoredTheme);
 
   useEffect(() => {
-    const saved = localStorage.getItem(THEME_STORAGE_KEY);
-    if (saved && saved in THEMES) {
-      setThemeIdState(saved as ThemeId);
-    }
+    const handleChange = () => {
+      setThemeIdState(readStoredTheme());
+    };
+
+    window.addEventListener(THEME_EVENT, handleChange);
+    window.addEventListener('storage', handleChange);
+
+    return () => {
+      window.removeEventListener(THEME_EVENT, handleChange);
+      window.removeEventListener('storage', handleChange);
+    };
   }, []);
 
-  const setThemeId = (id: ThemeId) => {
-    setThemeIdState(id);
+  const setThemeId = useCallback((id: ThemeId) => {
     localStorage.setItem(THEME_STORAGE_KEY, id);
-  };
+    window.dispatchEvent(new Event(THEME_EVENT));
+  }, []);
 
   return { themeId, setThemeId, theme: THEMES[themeId] };
 }
