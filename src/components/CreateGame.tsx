@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react';
 import { ArrowLeft, Upload, FileText, Loader2, Sparkles } from 'lucide-react';
 import { useToast } from './Toast';
+import { useTheme } from '@/lib/theme';
+import { ThemePicker } from './ThemePicker';
 import type { ModeratorSession } from '@/lib/types';
 import { createGame as createGameFn, uploadPresentation as uploadFn } from '@/lib/gameApi';
 
@@ -68,9 +70,10 @@ export function CreateGame({ onBack, onCreated }: CreateGameProps) {
   };
 
   const busy = creating || uploading;
+  const { theme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-gradient-game flex flex-col">
+    <div className={`min-h-screen ${theme.bgGradientClass} flex flex-col`}>
       <header className="flex items-center gap-4 px-6 py-5 md:px-12">
         <button
           onClick={onBack}
@@ -88,7 +91,7 @@ export function CreateGame({ onBack, onCreated }: CreateGameProps) {
           <div className="glass rounded-3xl p-6 md:p-8 animate-slide-up">
             {/* Game Name */}
             <div className="mb-6">
-              <label className="block text-amber-400 text-sm font-bold tracking-wider uppercase mb-2">
+              <label className={`block ${theme.accentTextClass} text-sm font-bold tracking-wider uppercase mb-2`}>
                 Game Name
               </label>
               <input
@@ -104,7 +107,7 @@ export function CreateGame({ onBack, onCreated }: CreateGameProps) {
 
             {/* Moderator Name */}
             <div className="mb-6">
-              <label className="block text-amber-400 text-sm font-bold tracking-wider uppercase mb-2">
+              <label className={`block ${theme.accentTextClass} text-sm font-bold tracking-wider uppercase mb-2`}>
                 Your Name (Game Master)
               </label>
               <input
@@ -120,7 +123,7 @@ export function CreateGame({ onBack, onCreated }: CreateGameProps) {
 
             {/* File Upload */}
             <div className="mb-8">
-              <label className="block text-amber-400 text-sm font-bold tracking-wider uppercase mb-2">
+              <label className={`block ${theme.accentTextClass} text-sm font-bold tracking-wider uppercase mb-2`}>
                 Presentation Upload
               </label>
               <input
@@ -145,7 +148,7 @@ export function CreateGame({ onBack, onCreated }: CreateGameProps) {
                 </button>
               ) : (
                 <div className="flex items-center gap-3 px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl">
-                  <FileText className="w-6 h-6 text-amber-400 flex-shrink-0" />
+                  <FileText className={`w-6 h-6 ${theme.accentTextClass} flex-shrink-0`} />
                   <div className="flex-1 min-w-0">
                     <p className="text-white font-semibold truncate">{file.name}</p>
                     <p className="text-slate-500 text-sm">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
@@ -166,7 +169,7 @@ export function CreateGame({ onBack, onCreated }: CreateGameProps) {
             <button
               onClick={handleCreate}
               disabled={busy || !gameName.trim() || !moderatorName.trim() || !file}
-              className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-800 disabled:text-slate-600 text-slate-950 disabled:cursor-not-allowed font-bold text-lg rounded-2xl transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-amber-500/20 disabled:shadow-none"
+              className={`w-full flex items-center justify-center gap-2 px-6 py-4 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed font-bold text-lg rounded-2xl transition-all hover:scale-[1.02] active:scale-95 disabled:shadow-none ${theme.buttonClass}`}
             >
               {busy ? (
                 <>
@@ -187,6 +190,8 @@ export function CreateGame({ onBack, onCreated }: CreateGameProps) {
           </p>
         </div>
       </main>
+
+      <ThemePicker />
     </div>
   );
 }
