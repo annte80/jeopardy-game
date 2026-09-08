@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import { joinGame as joinGameFn } from '@/lib/gameApi';
 import { useToast } from './Toast';
+import { useTheme } from '@/lib/theme';
+import { ThemePicker } from './ThemePicker';
 import type { PlayerSession } from '@/lib/types';
 
 interface JoinGameProps {
@@ -42,7 +44,8 @@ export function JoinGame({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { show } = useToast();
+    const { show } = useToast();
+  const { theme } = useTheme();
 
   // ---------------------------------------------------------------------------
   // ROOM CODE
@@ -175,8 +178,8 @@ export function JoinGame({
   // RENDER
   // ---------------------------------------------------------------------------
 
-  return (
-    <div className="min-h-screen bg-gradient-game flex flex-col">
+    return (
+    <div className={`min-h-screen ${theme.bgGradientClass} flex flex-col`}>
       <header className="flex items-center gap-4 px-6 py-5 md:px-12">
         <button
           onClick={onBack}
@@ -233,10 +236,10 @@ export function JoinGame({
                   autoFocus
                 />
 
-                <button
+                                <button
                   onClick={handleCodeNext}
                   disabled={roomCode.trim().length < 4}
-                  className="w-full mt-6 flex items-center justify-center gap-2 px-6 py-3.5 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-800 disabled:text-slate-600 text-slate-950 font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed"
+                  className={`w-full mt-6 flex items-center justify-center gap-2 px-6 py-3.5 disabled:bg-slate-800 disabled:text-slate-600 font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed ${theme.buttonClass}`}
                 >
                   Continue
                   <ArrowRight className="w-5 h-5" />
@@ -244,9 +247,9 @@ export function JoinGame({
               </>
             ) : (
               <>
-                <div className="text-center mb-6">
-                  <div className="inline-flex p-3 bg-blue-500/10 border border-blue-500/30 rounded-2xl mb-4">
-                    <User className="w-8 h-8 text-blue-400" />
+                                <div className="text-center mb-6">
+                  <div className={`inline-flex p-3 rounded-2xl mb-4 ${theme.headerIconWrapClass}`}>
+                    <KeyRound className={`w-8 h-8 ${theme.accentTextClass}`} />
                   </div>
 
                   <h2 className="text-2xl font-bold text-white mb-2">
@@ -255,7 +258,7 @@ export function JoinGame({
 
                   <p className="text-slate-400 text-sm">
                     Joining room{' '}
-                    <span className="font-mono font-bold text-amber-400">
+                                        <span className={`font-mono font-bold ${theme.accentTextClass}`}>
                       {roomCode}
                     </span>
                   </p>
@@ -435,8 +438,9 @@ export function JoinGame({
               </>
             )}
           </div>
-        </div>
+        </div>     
       </main>
+      <ThemePicker />
     </div>
   );
 }
