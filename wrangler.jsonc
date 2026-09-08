@@ -2,9 +2,9 @@
   "name": "jeopardy-game",
   "compatibility_date": "2026-09-07",
   "main": "./worker.js",
-  "assets": {
+    "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/anigenre", "/anigenre/*", "/secadmin", "/secadmin/*"]
   }
-}
