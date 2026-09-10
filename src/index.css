@@ -44,8 +44,8 @@
   .bg-gradient-hero-ocean {
     background: linear-gradient(135deg, #0f172a 0%, #0c4a6e 30%, #083344 60%, #020617 100%);
   }
-  .bg-gradient-hero-crimson {
-    background: linear-gradient(135deg, #1c0a0a 0%, #450a0a 30%, #1e1b1b 60%, #020617 100%);
+    .bg-gradient-hero-crimson {
+    background: linear-gradient(135deg, #1c0a0a 0%, #450a0a 30%, #2a0a0a 65%, #0a0505 100%);
   }
   .bg-gradient-hero-neon {
     background: linear-gradient(135deg, #0f0a1e 0%, #3b0764 30%, #0c1a3e 60%, #020617 100%);
